@@ -1,4 +1,5 @@
-const { User } = require("../../models")
+const { User, Fund, Payment } = require("../../models")
+// const { updateDonate } = require("./payment")
 
 exports.addUser = async (req, res) => {
     try {
@@ -22,6 +23,39 @@ exports.addUser = async (req, res) => {
 exports.getUsers = async (req, res) => {
     try {
         const showUsers = await User.findAll({
+            attributes: {
+                exclude: ['password', 'status', 'createdAt', 'updatedAt']
+            }
+        })
+
+        res.send({
+            status: "success",
+            showUsers
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.send({
+            status: "failed",
+            message: "server error"
+        })
+    }
+}
+
+exports.getUsersByPayment = async(req, res) => {
+    try {
+        const showUsers = await User.findAll({
+            include: {
+                model: Payment,
+                as: "payment",
+                limit: 10,
+                attributes: {
+                exclude: ['createdAt', 'updatedAt']
+                }
+                // where: {
+                //     fundId: 1
+                // },
+            },
             attributes: {
                 exclude: ['password', 'status', 'createdAt', 'updatedAt']
             }
@@ -105,6 +139,69 @@ exports.updateUser = async (req, res) => {
             status: "success",
             message: `Update data user id ${id} Successfuly`,
             data: newUser
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.send({
+            status: 'failed',
+            message: 'Server Error'
+        })
+    }
+}
+
+exports.editUserDonate = async (req, res) => {
+    try {
+        const { fundId, userId } = req.params
+        const statusPayment = req.body;
+
+        // console.log(req.params.fundId)
+        // console.log(req.params.userId)
+
+        await Payment.update(statusPayment, {
+            where: {
+                fundId: fundId,
+                userId: userId
+            },
+            attributes: {
+                exclude : ["createdAt", "updatedAt"]
+            }
+
+        })
+
+        let fundData = await Fund.findOne({
+            include: {
+                model: User,
+                as: "userDonate",
+                through: {
+                    model: Payment,
+                    as: "payment",
+                    attributes: {
+                        exclude: [ "createdAt", "updatedAt"]
+                    },
+                },
+                attributes: {
+                    exclude: ["password", "status", "createdAt", "updatedAt"]
+                }
+            },
+            where: {
+                id: fundId
+            },
+            attributes: {
+                exclude: ["adminId", "createdAt", "updatedAt"]
+            }
+        })
+
+        let payment = await Payment.findOne({
+            where: {
+                id: fundId
+            }
+        })
+
+        res.send({
+            status: 'success',
+            message: 'Update Successfully',
+            fundData
         })
 
     } catch (error) {
