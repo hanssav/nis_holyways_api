@@ -26,14 +26,6 @@ exports.register = async(req, res) => {
             })
         }
 
-        // await User.findOne({
-        //     if(data.email == User.email){
-        //     req.status(500).send({
-
-        //         })
-        //     }
-        // })
-
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(req.body.password, salt)
 
