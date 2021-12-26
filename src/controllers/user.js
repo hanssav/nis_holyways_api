@@ -155,13 +155,10 @@ exports.editUserDonate = async (req, res) => {
         const { fundId, userId } = req.params
         const statusPayment = req.body;
 
-        // console.log(req.params.fundId)
-        // console.log(req.params.userId)
-
         await Payment.update(statusPayment, {
             where: {
                 fundId: fundId,
-                userId: userId
+                userId: userI
             },
             attributes: {
                 exclude : ["createdAt", "updatedAt"]
